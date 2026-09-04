@@ -8,8 +8,13 @@ import com.tripway.hotel_service.mapper.HotelMapper;
 import com.tripway.hotel_service.repository.HotelRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
@@ -86,5 +91,45 @@ public class HotelServiceImpl implements HotelService {
                                 "Hotel not found with id: " + id
                         )
                 );
+    }
+
+    @Override
+    public Page<HotelResponse> getHotels(
+            int page,
+            int size,
+            String sortBy,
+            String direction
+    ) {
+
+        if (page < 0) {
+            throw new IllegalArgumentException("Page number cannot be negative");
+        }
+
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("Page size must be between 1 and 100");
+        }
+
+        Set<String> allowedSortFields = Set.of(
+                "id",
+                "name",
+                "city",
+                "pricePerNight",
+                "rating"
+        );
+
+        if (!allowedSortFields.contains(sortBy)) {
+            throw new IllegalArgumentException(
+                    "Invalid sort field: " + sortBy
+            );
+        }
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return hotelRepository.findAll(pageable)
+                .map(hotelMapper::toResponse);
     }
 }

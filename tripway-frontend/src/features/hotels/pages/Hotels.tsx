@@ -8,21 +8,38 @@ import HotelCard from '../components/HotelCard';
 function HotelsPage() {
   const dispatch = useAppDispatch();
 
-  const { hotels, loading, error } = useAppSelector(
-    (state) => state.hotels,
-  );
+  const {
+    hotels,
+    loading,
+    error,
+    currentPage,
+    totalPages,
+    totalElements,
+  } = useAppSelector((state) => state.hotels);
 
   useEffect(() => {
-    dispatch(fetchHotels());
+    dispatch(fetchHotels(0));
   }, [dispatch]);
+
+  const handlePrevious = () => {
+    if (currentPage > 0) {
+      dispatch(fetchHotels(currentPage - 1));
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages - 1) {
+      dispatch(fetchHotels(currentPage + 1));
+    }
+  };
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-red-500" />
 
-          <p className="text-gray-600">
+          <p className="mt-4 text-sm text-gray-600">
             Finding the best hotels...
           </p>
         </div>
@@ -32,9 +49,9 @@ function HotelsPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-          <h2 className="text-lg font-semibold text-red-700">
+      <div className="min-h-[60vh] bg-gray-50 px-4 py-12">
+        <div className="mx-auto max-w-xl rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+          <h2 className="font-semibold text-red-700">
             Unable to load hotels
           </h2>
 
@@ -48,121 +65,105 @@ function HotelsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero/Search Section */}
-      <section className="bg-gradient-to-r from-blue-700 to-blue-500">
-        <div className="mx-auto max-w-7xl px-6 py-12">
+      {/* Hero */}
+      <section className="bg-gradient-to-r from-red-600 to-red-500">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <h1 className="text-3xl font-bold text-white md:text-4xl">
             Find your perfect stay
           </h1>
 
-          <p className="mt-2 text-blue-100">
+          <p className="mt-2 text-red-100">
             Discover comfortable hotels at the best prices.
           </p>
 
-          {/* Search Box */}
-          <div className="mt-8 rounded-2xl bg-white p-4 shadow-xl">
-            <div className="grid gap-4 md:grid-cols-4">
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-gray-500">
-                  DESTINATION
-                </label>
+          {/* Search */}
+          <div className="mt-7 rounded-2xl bg-white p-4 shadow-xl">
+            <div className="grid gap-3 md:grid-cols-4">
+              <input
+                type="text"
+                placeholder="Where are you going?"
+                className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-red-500"
+              />
 
-                <input
-                  type="text"
-                  placeholder="Where are you going?"
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 outline-none focus:border-blue-500"
-                />
-              </div>
+              <input
+                type="date"
+                className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-red-500"
+              />
 
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-gray-500">
-                  CHECK-IN
-                </label>
+              <input
+                type="date"
+                className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-red-500"
+              />
 
-                <input
-                  type="date"
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-gray-500">
-                  CHECK-OUT
-                </label>
-
-                <input
-                  type="date"
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-                >
-                  Search Hotels
-                </button>
-              </div>
+              <button
+                type="button"
+                className="rounded-lg bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600"
+              >
+                Search Hotels
+              </button>
             </div>
           </div>
         </div>
       </section>
 
       {/* Hotel Listing */}
-      <main className="mx-auto max-w-7xl px-6 py-10">
-        {/* Heading */}
-        <div className="mb-8 flex items-center justify-between">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
               Hotels in Hyderabad
             </h2>
 
             <p className="mt-1 text-sm text-gray-500">
-              {hotels.length} hotels available
+              {totalElements} hotels available
             </p>
           </div>
 
-          {/* Sort */}
           <select
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-blue-500"
             defaultValue="recommended"
+            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none"
           >
-            <option value="recommended">
-              Recommended
-            </option>
-
-            <option value="price-low">
-              Price: Low to High
-            </option>
-
-            <option value="price-high">
-              Price: High to Low
-            </option>
-
-            <option value="rating">
-              Highest Rated
-            </option>
+            <option value="recommended">Recommended</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Highest Rated</option>
           </select>
         </div>
 
         {/* Cards */}
-        {hotels.length === 0 ? (
-          <div className="rounded-xl bg-white p-12 text-center shadow-sm">
-            <p className="text-gray-500">
-              No hotels found.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {hotels.map((hotel) => (
-              <HotelCard
-                key={hotel.id}
-                hotel={hotel}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {hotels.map((hotel) => (
+            <HotelCard
+              key={hotel.id}
+              hotel={hotel}
+            />
+          ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-10 flex items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={handlePrevious}
+            disabled={currentPage === 0}
+            className="rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            ← Previous
+          </button>
+
+          <span className="text-sm font-medium text-gray-600">
+            Page {currentPage + 1} of {totalPages}
+          </span>
+
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={currentPage === totalPages - 1}
+            className="rounded-lg bg-red-500 px-5 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Next →
+          </button>
+        </div>
       </main>
     </div>
   );

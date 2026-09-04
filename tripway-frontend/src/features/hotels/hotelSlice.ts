@@ -5,21 +5,31 @@ import type { Hotel } from './hotel.types';
 
 interface HotelState {
   hotels: Hotel[];
+  currentPage: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: HotelState = {
   hotels: [],
+  currentPage: 0,
+  pageSize: 5,
+  totalElements: 0,
+  totalPages: 0,
+  last: false,
   loading: false,
   error: null,
 };
 
 export const fetchHotels = createAsyncThunk(
   'hotels/fetchHotels',
-  async (_, { rejectWithValue }) => {
+  async (page: number = 0, { rejectWithValue }) => {
     try {
-      return await getHotels();
+      return await getHotels(page, 5);
     } catch (error) {
       console.error(error);
 
@@ -38,10 +48,18 @@ const hotelSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
+
       .addCase(fetchHotels.fulfilled, (state, action) => {
         state.loading = false;
-        state.hotels = action.payload;
+
+        state.hotels = action.payload.content;
+        state.currentPage = action.payload.pageable.pageNumber;
+        state.pageSize = action.payload.pageable.pageSize;
+        state.totalElements = action.payload.totalElements;
+        state.totalPages = action.payload.totalPages;
+        state.last = action.payload.last;
       })
+
       .addCase(fetchHotels.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;

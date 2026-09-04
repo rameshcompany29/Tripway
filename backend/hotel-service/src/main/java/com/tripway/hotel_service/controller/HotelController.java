@@ -4,12 +4,18 @@ import com.tripway.hotel_service.dto.HotelRequest;
 import com.tripway.hotel_service.dto.HotelResponse;
 import com.tripway.hotel_service.service.HotelService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/v1/hotels")
 public class HotelController {
@@ -30,11 +36,22 @@ public class HotelController {
     }
 
     @GetMapping
-    public ResponseEntity<List<HotelResponse>> getAllHotels() {
+    public Page<HotelResponse> getHotels(
+            @RequestParam(defaultValue = "0")
+            @Min(0) int page,
 
-        return ResponseEntity.ok(
-                hotelService.getAllHotels()
-        );
+            @RequestParam(defaultValue = "10")
+            @Min(1) @Max(100) int size,
+
+            @RequestParam(defaultValue = "id")
+            String sortBy,
+
+            @RequestParam(defaultValue = "asc")
+            String direction
+    )
+    {
+
+        return hotelService.getHotels(page, size, sortBy, direction);
     }
 
     @GetMapping("/{id}")
